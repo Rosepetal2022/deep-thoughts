@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useMutation } from '@apollo/client';
+import { ADD_USER } from '../utils/mutations';
+import Auth from '../utils/auth';
 
 const Signup = () => {
   const [formState, setFormState] = useState({ username: '', email: '', password: '' });
@@ -13,9 +16,24 @@ const Signup = () => {
     });
   };
 
+  const [addUser, { error }] = useMutation(ADD_USER);
+
   // submit form
   const handleFormSubmit = async (event) => {
     event.preventDefault();
+
+    //user try/catch instead of promises to handle errors
+    try{
+      //execute addUser mutatoin and pass in variable data from form
+      const { data } = await addUser({
+        variables: { ...formState }
+      });
+      
+      console.log(data);
+      Auth.Login(data.addUser.token);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
@@ -56,6 +74,8 @@ const Signup = () => {
                 Submit
               </button>
             </form>
+
+            {error && <div>Signup failed</div>}
           </div>
         </div>
       </div>
